@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"sync"
+	"time"
 	"timescale-filla/pkg"
 )
 
@@ -32,20 +33,37 @@ func main() {
 		return
 	}
 
-	for i := 0; i <= 100; i++ {
+	var inserts int
+	var insertLock sync.RWMutex
+
+	go func() {
+		for {
+			time.Sleep(time.Second * 1)
+			insertLock.Lock()
+			fmt.Printf("Inserts per second: %d\n", inserts)
+			inserts = 0
+			insertLock.Unlock()
+		}
+	}()
+
+	for i := 0; i < 100; i++ {
 		go func() {
 			for {
 				ctx := context.Background()
-				var amount = 100
+				var amount = 1000
 				data := pkg.GenerateData(amount)
 
-				err = pkg.Insert(ctx, pool, data)
+				err = pkg.BatchInsert(ctx, pool, data)
 				if err != nil {
 					log.Println(err)
 					return
 				}
 
-				fmt.Printf("Inserted %d rows of data!\n", amount)
+				go func() {
+					insertLock.Lock()
+					inserts += amount
+					insertLock.Unlock()
+				}()
 			}
 		}()
 	}
