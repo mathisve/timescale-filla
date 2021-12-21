@@ -7,7 +7,7 @@ import (
 )
 
 var InsertStatement = `
-   INSERT INTO sensor_data (time, sensor_id, temperature, cpu) VALUES ($1, $2, $3, $4);
+   INSERT INTO sensor_data (time, sensor_id, temperature, cpu, randomString) VALUES ($1, $2, $3, $4, $5);
    `
 
 // BatchInsert data in pool using batch insert
@@ -15,7 +15,7 @@ func BatchInsert(ctx context.Context, pool *pgxpool.Pool, data []InsertSchema) (
 	batch := &pgx.Batch{}
 
 	for _, row := range data {
-		batch.Queue(InsertStatement, row.Time, row.SensorId, row.Temperature, row.Cpu)
+		batch.Queue(InsertStatement, row.Time, row.SensorId, row.Temperature, row.Cpu, row.RandomString)
 	}
 
 	br := pool.SendBatch(ctx, batch)
@@ -34,7 +34,7 @@ func BatchInsert(ctx context.Context, pool *pgxpool.Pool, data []InsertSchema) (
 // Insert data in pool
 func Insert(ctx context.Context, pool *pgxpool.Pool, data []InsertSchema) (err error) {
 	for _, row := range data {
-		_, err = pool.Exec(ctx, InsertStatement, row.Time, row.SensorId, row.Temperature, row.Cpu)
+		_, err = pool.Exec(ctx, InsertStatement, row.Time, row.SensorId, row.Temperature, row.Cpu, row.RandomString)
 		if err != nil {
 			return err
 		}

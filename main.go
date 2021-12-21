@@ -46,11 +46,11 @@ func main() {
 		}
 	}()
 
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 1000; i++ {
 		go func() {
 			for {
 				ctx := context.Background()
-				var amount = 1000
+				var amount = 5
 				data := pkg.GenerateData(amount)
 
 				err = pkg.BatchInsert(ctx, pool, data)
@@ -71,5 +71,4 @@ func main() {
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	wg.Wait()
-
 }
