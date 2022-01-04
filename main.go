@@ -4,19 +4,31 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"sync"
 	"time"
 	"timescale-filla/pkg"
+
+	"github.com/ghodss/yaml"
 )
 
 func main() {
-	connStr := pkg.ConnStruct{
-		Username: "postgres",
-		Password: "password",
-		Host:     "localhost",
-		Port:     5432,
-		Database: "postgres",
-	}.CreateConnectionString()
+	// read password from file
+	content, err := os.ReadFile("creds.yaml")
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	var cs pkg.ConnStruct
+	err = yaml.Unmarshal(content, &cs)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	// connect to db
+	connStr := cs.CreateConnectionString()
 
 	ctx := context.Background()
 	pool, err := pkg.CreateConnPool(ctx, connStr)
@@ -27,6 +39,7 @@ func main() {
 
 	defer pool.Close()
 
+	// create tables
 	err = pkg.CreateTables(ctx, pool)
 	if err != nil {
 		log.Println(err)
@@ -36,6 +49,7 @@ func main() {
 	var inserts int
 	var insertLock sync.RWMutex
 
+	// async insert counter
 	go func() {
 		for {
 			time.Sleep(time.Second * 1)
@@ -46,24 +60,26 @@ func main() {
 		}
 	}()
 
-	for i := 0; i < 1000; i++ {
+	// insert goroutine
+	for i := 0; i < 1; i++ {
 		go func() {
 			for {
 				ctx := context.Background()
-				var amount = 5
+				var amount = 1
 				data := pkg.GenerateData(amount)
 
 				err = pkg.BatchInsert(ctx, pool, data)
 				if err != nil {
+					// if it fails to insert, wait one second
+					// since the data is random, there is no need to retry
 					log.Println(err)
-					return
-				}
+					time.Sleep(time.Second * 1)
 
-				go func() {
+				} else {
 					insertLock.Lock()
 					inserts += amount
 					insertLock.Unlock()
-				}()
+				}
 			}
 		}()
 	}

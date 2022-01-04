@@ -9,9 +9,9 @@ var SensorTypes = []string{"a", "b", "c", "d", "e", "f", "g"}
 var SensorLocations = []string{"bottom", "top", "left", "right", "middle", "under", "above"}
 var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
-func GenerateData(amount int) (data []InsertSchema) {
+func GenerateData(amount int) (data []InsertStruct) {
 	for i := 0; i <= amount; i++ {
-		data = append(data, InsertSchema{
+		data = append(data, InsertStruct{
 			Time:         time.Now(),
 			SensorId:     rand.Intn(len(SensorTypes)) + 1, // +1 because sensorId can't be 0
 			Temperature:  rand.Float64() * float64(rand.Intn(99)),

@@ -3,7 +3,6 @@ package pkg
 import (
 	"context"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"time"
 )
 
 var TABLE_SQL = `CREATE TABLE IF NOT EXISTS sensors (
@@ -22,14 +21,6 @@ var TABLE_SQL = `CREATE TABLE IF NOT EXISTS sensors (
 	);
 	SELECT create_hypertable('sensor_data', 'time', if_not_exists => TRUE);
    `
-
-type InsertSchema struct {
-	Time         time.Time
-	SensorId     int
-	Temperature  float64
-	Cpu          float64
-	RandomString string
-}
 
 func CreateTables(ctx context.Context, pool *pgxpool.Pool) (err error) {
 

@@ -3,15 +3,16 @@ package pkg
 import (
 	"context"
 	"fmt"
+
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type ConnStruct struct {
-	Username string
-	Password string
-	Host     string
-	Port     int
-	Database string
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Host     string `json:"host"`
+	Port     int    `json:"port"`
+	Database string `json:"database"`
 }
 
 func (c ConnStruct) CreateConnectionString() string {
